@@ -1,15 +1,16 @@
 section .data
     byte_buf: db 0x00
     nl: db 0x0a
-    frames: db 0x00, 0xff, 0x00, 0xff
+    ;frames: db 0x00, 0xff, 0x00, 0xff
 
 section .text
     global _start
 
 _start:
-    mov byte [byte_buf], 01010101b
+    mov byte [byte_buf], 0x0f
     mov rdi, byte_buf
     call write_line
+
     ; sys_exit with code 0
     mov rax, 60
     xor rdi, rdi
@@ -17,17 +18,13 @@ _start:
 
 write_line:
     ; write out a byte as a string, i.e. 01010101b -> "00000000"
-    int3
-    mov r8, rdi ; save argument rdi into r8
-    int3 ; breakpoint for gdb
+    mov r8, [rdi] ; save argument rdi into r8
     mov r10, 8 ; loop counter
     .write_loop:
         ; check whether to write a 1 or a 0
         mov r9, r8
-        int3 ; breakpoint for gdb
         and r9, 1 ; check if the least significant bit is 1
-        int3 ; breakpoint for gdb
-        jz .write_zero ; write a zero if the result of the and operation is false
+        jnz .write_zero ; write a zero if the result of the and operation is false
         jmp .write_one
         ; represent a zero
         .write_zero:
