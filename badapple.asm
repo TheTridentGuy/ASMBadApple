@@ -1,21 +1,32 @@
 section .data
     byte_buf: db 0x00
     nl: db 0x0a
-    frames: db 0xf0, 0xf0, 0xf0, 0xf0, 0x0f, 0x0f, 0x0f, 0x0f
+    frames: db 0xf0,0xf0,0xf0,0xf0,0x0f,0x0f,0x0f,0x0f,  0x0f,0x0f,0x0f,0x0f,0xf0,0xf0,0xf0,0xf0
     frames_len: equ $ - frames
+    nls: db 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a
+    nls_len: equ $ - nls
+    frame_delay: dq 1, 0
 
 section .text
     global _start
 
 _start:
     mov r12, 0 ; frame index
-    call write_nls
     .frame_loop:
-        mov rdi, [frames+r12] ; first arg for write_line **REMEMBER TO DEREFERENCE**
-        call write_line
-        inc r12
-        cmp r12, frames_len
-        jl .frame_loop
+        mov r13, 0b00000111 ; check for divisibility by 8
+        and r13, r12
+        jnz .finish_loop ; skip if not an 8th frame
+        mov rax, 35 ; sys_nanosleep
+        mov rdi, frame_delay
+        mov rsi, 0
+        syscall
+        call write_nls
+        .finish_loop:
+            mov rdi, [frames+r12] ; first arg for write_line **REMEMBER TO DEREFERENCE**
+            call write_line
+            inc r12
+            cmp r12, frames_len
+            jl .frame_loop
     ; sys_exit with code 0
     mov rax, 60
     xor rdi, rdi
@@ -23,12 +34,11 @@ _start:
 
 write_nls:
     ; write some newlines
-    mov r8, 25
-    .write_nl_loop:
-        mov rdi, nl
-        call write
-        dec r8
-        jnz .write_nl_loop
+    mov rsi, nls
+    mov rax, 1 ; sys_write
+    mov rdi, 1 ; stdout
+    mov rdx, nls_len ; the length of the string of newlines
+    syscall
     ret
 
 write_line:
