@@ -1,0 +1,4 @@
+#! /bin/bash
+nasm -f elf64 badapple.asm -o badapple.o
+ld badapple.o -o badapple
+./badapple
