@@ -1,6 +1,6 @@
 SECTIONS
 {
-  . = 0x400000;
+  . = 0x8048000 + SIZEOF_HEADERS;
 
   tiny : { *(.text) *(.data) }
 
