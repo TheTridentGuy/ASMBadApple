@@ -1,10 +1,11 @@
-ENTRY(nomain)
-
 SECTIONS
 {
-  . = 0x8048000 + SIZEOF_HEADERS;
+  . = 0x400000;
 
-  tiny : { *(.text) *(.data) *(.rodata*) }
+  tiny : { *(.text) *(.data) }
 
   /DISCARD/ : { *(*) }
 }
+
+ENTRY(_start)
+OUTPUT_FORMAT("elf64-x86-64")
